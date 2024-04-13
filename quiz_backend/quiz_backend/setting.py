@@ -1,5 +1,4 @@
 from starlette.config import Config
-from quiz_backend.utils.imports import timedelta
 
 # Initialize Config object with path to .env file
 try:
@@ -11,8 +10,8 @@ except FileNotFoundError as e:
 db_url = config.get("DB_URL")
 test_db_url = config.get("TEST_DB_URL")
 
-access_expiry_time = timedelta(minutes=int(config.get("ACCESS_EXPIRY_TIME")))
-refresh_expiry_time = timedelta(days=int(config.get("REFRESH_EXPIRY_TIME")))
+access_expiry_time = config.get("ACCESS_EXPIRY_TIME")
+refresh_expiry_time = config.get("REFRESH_EXPIRY_TIME")
 
-secret_key = config.get("SECRET_KEY")
-algorithm = config.get("ALGORITHM")
+SECRET_KEY = config("SECRET_KEY", cast=str)
+ALGORITHM = config("ALGORITHM", cast=str)

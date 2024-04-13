@@ -1,8 +1,9 @@
 from typing import Any
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from quiz_backend.setting import algorithm, secret_key
-from quiz_backend.utils.imports import timedelta
+import quiz_backend.setting as settings
+from ..setting import ALGORITHM, SECRET_KEY
+from datetime import timedelta
 from quiz_backend.utils.types import TokenType
 
 # Initialize password context for hashing passwords securely
@@ -28,7 +29,7 @@ def generateToken(data: dict, expiry_time: timedelta):
         })
         # Encode the data into a JWT token
         token = jwt.encode(
-            to_encode_data, secret_key, algorithm=algorithm)
+            to_encode_data, SECRET_KEY, algorithm=ALGORITHM)
         return token
     except JWTError as je:
         # Raise an exception if there's an error encoding the token
@@ -47,7 +48,7 @@ def decodeToken(token: str):
     """
     try:
         # Decode the token to retrieve the payload data
-        decoded_data = jwt.decode(token, secret_key, algorithms=algorithm)
+        decoded_data = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         return decoded_data
     except JWTError as je:
         # Raise an exception if there's an error decoding the token

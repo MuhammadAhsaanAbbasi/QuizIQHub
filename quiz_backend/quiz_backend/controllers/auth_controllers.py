@@ -1,12 +1,15 @@
 from typing import Any
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from quiz_backend.setting import algorithm, secret_key
-from quiz_backend.utils.imports import timedelta
-from quiz_backend.utils.types import TokenType
+from datetime import timedelta
+
+# from quiz_backend.utils.imports import timedelta, algorithm, secret_key
+# from quiz_backend.utils.types import TokenType
 
 # Initialize password context for hashing passwords securely
 pwd_context = CryptContext(schemes="bcrypt")
+secret_key = "baf8cdcf444543fa999dd27f1d138435ebb6f3bc610ed64518a8f43d6983"
+algorithm = "HS256"
 
 
 def generateToken(data: dict, expiry_time: timedelta):
@@ -21,6 +24,7 @@ def generateToken(data: dict, expiry_time: timedelta):
         str: The generated JWT token.
     """
     try:
+        print(expiry_time)
         # Update the payload with the expiration time
         to_encode_data = data.copy()
         to_encode_data.update({
@@ -95,20 +99,28 @@ def generateAccessAndRefreshToken(user_details: dict[str, Any]):
     Returns:
         dict: A dictionary containing the generated access and refresh tokens.
     """
+    print("User details in generate eccess an drefresh token funtion", user_details)
     # Constructing data payload for tokens
     data = {
         "user_name": user_details["user_name"],
         "user_email": user_details["user_email"]
     }
     # Generate access and refresh tokens
-    access_token = generateToken(data, user_details["access_expiry_time"])
-    refresh_token = generateToken(data, user_details["refresh_expiry_time"])
+    access_token = generateToken(data, user_details["access_expiry_time"].total_seconds())
+    refresh_token = generateToken(data, user_details["refresh_expiry_time"].total_seconds())
+    access_expiry_time = user_details["access_expiry_time"]
+    refresh_expiry_time = user_details["refresh_expiry_time"]
 
     return {
-        "access_token": access_token,
-        "refresh_token": refresh_token
+        "access_token": {
+            "token": access_token,
+            "access_expiry_time": access_expiry_time
+        },
+        "refresh_token": {
+            "token": refresh_token,
+            "refresh_expiry_time": refresh_expiry_time
+        }
     }
-
 
 def tokenService():
     """

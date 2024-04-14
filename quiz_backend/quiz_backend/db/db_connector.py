@@ -7,7 +7,7 @@ from quiz_backend.setting import db_url, test_db_url
 connection_string = str(db_url).replace("postgresql", "postgresql+psycopg2")
 
 # Creating the SQLAlchemy engine
-engine = create_engine(connection_string, echo=True)
+engine = create_engine(connection_string)
 
 # Function to create tables based on SQLModel metadata
 def createTable():

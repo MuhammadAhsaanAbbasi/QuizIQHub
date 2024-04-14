@@ -21,4 +21,5 @@ class User(UserModel, table=True):
 # Define Token model
 class Token(SQLModel, table=True):
     token_id: Optional[int] = Field(None, primary_key=True)
+    user_id: int = Field(int, foreign_key="user.user_id")
     refresh_token: str  # Refresh token for authentication

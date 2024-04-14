@@ -1,5 +1,5 @@
 from starlette.config import Config
-from quiz_backend.utils.imports import timedelta
+from datetime import timedelta
 
 # Initialize Config object with path to .env file
 try:

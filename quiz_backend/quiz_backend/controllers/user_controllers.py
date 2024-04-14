@@ -1,14 +1,23 @@
+from datetime import timedelta
 from quiz_backend.controllers.auth_controllers import generateAccessAndRefreshToken
 from quiz_backend.setting import access_expiry_time, refresh_expiry_time
-from quiz_backend.utils.imports import (
-    User, Token, UserModel, LoginModel, Session, select, passswordIntoHash, verifyPassword, generateToken, decodeToken, ConflictException, InvalidInputException, NotFoundException, Annotated, Depends)
+from quiz_backend.utils.exception import ConflictException, InvalidInputException, NotFoundException
+from quiz_backend.models.user_models import LoginModel, UserModel, User, Token
+from sqlmodel import Session, select
+from quiz_backend.controllers.auth_controllers import decodeToken, generateAccessAndRefreshToken, verifyPassword, passswordIntoHash
+from typing import Annotated
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
+# import quiz_backend.setting as
+from quiz_backend.db.db_connector import get_session
 # Initialize OAuth2 password bearer for authentication
 auth_schema = OAuth2PasswordBearer(tokenUrl="")
 
 
-def signUp(user_form: UserModel, session: Session):
+DBSession = Annotated[Session, Depends(get_session)]
+
+
+def signupFn(user_form: UserModel, session: DBSession):
     """
     Function to sign up a new user.
 
@@ -49,17 +58,19 @@ def signUp(user_form: UserModel, session: Session):
         "access_expiry_time": access_expiry_time,
         "refresh_expiry_time": refresh_expiry_time
     }
+    print(data)
     token_data = generateAccessAndRefreshToken(data)
 
     # Save the refresh token in the database
-    token = Token(refresh_token=token_data["refresh_token"])
+    token = Token(user_id=user.user_id,
+                  refresh_token=token_data["refresh_token"]["token"])
     session.add(token)
     session.commit()
 
     return token_data
 
 
-def login(login_form: OAuth2PasswordRequestForm, session: Session):
+def loginFn(login_form: LoginModel, session: DBSession):
     """
     Function to log in a user.
 
@@ -70,14 +81,15 @@ def login(login_form: OAuth2PasswordRequestForm, session: Session):
     Returns:
         dict: A dictionary containing access and refresh tokens.
     """
+    print(login_form)
     users = session.exec(select(User))
     for user in users:
         user_email = user.user_email
         verify_password = verifyPassword(
-            user.user_password, login_form.password)
-        
+            user.user_password, login_form.user_password)
+
         # Check if provided credentials are valid
-        if user_email == login_form.username and verify_password:
+        if user_email == login_form.user_email and verify_password:
             data = {
                 "user_name": user.user_name,
                 "user_email": user.user_email,
@@ -86,8 +98,10 @@ def login(login_form: OAuth2PasswordRequestForm, session: Session):
             }
             token_data = generateAccessAndRefreshToken(data)
 
-            # Save the refresh token in the database
-            token = Token(refresh_token=token_data["refresh_token"])
+            # update the refresh token in the database
+            token = session.exec(select(Token).where(
+                Token.user_id == user.user_id)).one()
+            token.refresh_token = token_data["refresh_token"]["token"]
             session.add(token)
             session.commit()
             session.refresh(token)

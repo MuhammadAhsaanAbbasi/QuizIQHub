@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from quiz_backend.db.db_connector import get_session, createTable
 from contextlib import asynccontextmanager
-from quiz_backend.models.user_models import User
-from quiz_backend.utils.imports import NotFoundException, ConflictException, InvalidInputException
-
+from quiz_backend.models.user_models import User, UserModel
+from quiz_backend.utils.exception import NotFoundException, ConflictException, InvalidInputException
+from quiz_backend.controllers.user_controllers import signupFn, loginFn
+from typing import Annotated
 # Import other model modules
 import quiz_backend.models.admin_models
 import quiz_backend.models.quiz_models
@@ -43,7 +44,7 @@ def not_found(request: Request, exception: NotFoundException):
     Returns:
         JSONResponse: JSON response with 404 status code and error message.
     """
-    return JSONResponse(status_code=404, content=f"{exception.not_found} Not found")
+    return JSONResponse(status_code=400, content=f"{exception.not_found} Not found")
 
 @app.exception_handler(ConflictException)
 def conflict_exception(request: Request, exception: ConflictException):
@@ -57,7 +58,7 @@ def conflict_exception(request: Request, exception: ConflictException):
     Returns:
         JSONResponse: JSON response with 404 status code and error message.
     """
-    return JSONResponse(status_code=404, content=f"This {exception.conflict_input} already exists!")
+    return JSONResponse(status_code=409, content=f"This {exception.conflict_input} already exists!")
 
 @app.exception_handler(InvalidInputException)
 def invalid_exception(request: Request, exception: InvalidInputException):
@@ -71,7 +72,7 @@ def invalid_exception(request: Request, exception: InvalidInputException):
     Returns:
         JSONResponse: JSON response with 404 status code and error message.
     """
-    return JSONResponse(status_code=404, content=f"This {exception.invalid_input} already exists!")
+    return JSONResponse(status_code=400, content=f"Invalid {exception.invalid_input}!")
 
 # Define route for home endpoint
 @app.get("/")
@@ -85,17 +86,36 @@ def home():
     return "Welcome to the Quiz Project..."
 
 
-@app.get("/api/getUser")
-def getUser(user: str):
-    """
-    Route to get user details.
 
-    Args:
-        user (str): User identifier.
-
-    Returns:
-        str: Success message if user found, else raises NotFoundException.
-    """
-    if user == "bilal":
+@app.post("/api/userSignup")
+def userSignup(tokens_data: Annotated[dict, Depends(signupFn)]):
+    if not tokens_data:
         raise NotFoundException("User")
-    return "User has been found"
+    return tokens_data    
+
+@app.post("/api/Signin")
+def userSignin(token_data: Annotated[dict, Depends(loginFn)]):
+    if token_data:
+        return token_data
+    raise NotFoundException("User")
+
+@app.get("/api/user")
+def postLogin(user):
+    return user
+    
+    
+
+# @app.get("/api/getUser")
+# def getUser(user: str):
+#     """
+#     Route to get user details.
+
+#     Args:
+#         user (str): User identifier.
+
+#     Returns:
+#         str: Success message if user found, else raises NotFoundException.
+#     """
+#     if user == "bilal":
+#         raise NotFoundException("User")
+#     return "User has been found"

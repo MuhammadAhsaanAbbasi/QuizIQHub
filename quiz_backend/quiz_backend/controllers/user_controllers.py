@@ -70,7 +70,7 @@ def signupFn(user_form: UserModel, session: DBSession):
     return token_data
 
 
-def loginFn(login_form: LoginModel, session: DBSession):
+def loginFn(login_form: Annotated[OAuth2PasswordRequestForm, Depends()], session: DBSession):
     """
     Function to log in a user.
 
@@ -86,10 +86,10 @@ def loginFn(login_form: LoginModel, session: DBSession):
     for user in users:
         user_email = user.user_email
         verify_password = verifyPassword(
-            user.user_password, login_form.user_password)
+            user.user_password, login_form.password)
 
         # Check if provided credentials are valid
-        if user_email == login_form.user_email and verify_password:
+        if user_email == login_form.username and verify_password:
             data = {
                 "user_name": user.user_name,
                 "user_email": user.user_email,

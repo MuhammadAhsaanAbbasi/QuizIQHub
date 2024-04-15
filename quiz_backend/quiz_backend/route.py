@@ -3,10 +3,16 @@ from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from quiz_backend.db.db_connector import get_session, createTable
 from contextlib import asynccontextmanager
+<<<<<<< HEAD
 from quiz_backend.models.user_models import User, UserModel
 from quiz_backend.utils.exception import NotFoundException, ConflictException, InvalidInputException
 from quiz_backend.controllers.user_controllers import signupFn, loginFn
 from typing import Annotated
+=======
+from quiz_backend.models.user_models import User
+from .utils.exception import NotFoundException, ConflictException, InvalidInputException
+
+>>>>>>> ce0d0359427d81eb1ce603b203122acdc2d0dbd8
 # Import other model modules
 import quiz_backend.models.admin_models
 import quiz_backend.models.quiz_models
@@ -28,7 +34,26 @@ async def lifeSpan(app: FastAPI):
     yield
 
 # Create FastAPI application instance with custom lifespan event handler
-app = FastAPI(lifespan=lifeSpan)
+app = FastAPI(title="OAuth2 Microservice",
+    description="A multi-user OAuth2 microservice with login/password signin and Google signin features.",
+    version="1.0.0",
+    terms_of_service="https://quiz_app.vercel.app/terms/",
+    lifespan=lifeSpan,
+    contact={
+        "name": "Muhammad Ahsaan Abbasi",
+        "url": "http://localhost:8000/contact/",
+        "email": "mahsaanabbasi@gmail.com",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    servers=[
+        {
+            "url": "http://localhost:8000",
+            "description": "Local server"
+        },
+    ],)
 
 # Exception handlers for custom exceptions
 

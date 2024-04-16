@@ -1,21 +1,14 @@
 from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
-from quiz_backend.db.db_connector import get_session, createTable
+from quiz_backend.db.db_connector import  createTable
 from contextlib import asynccontextmanager
-<<<<<<< HEAD
-from quiz_backend.models.user_models import User, UserModel
 from quiz_backend.utils.exception import NotFoundException, ConflictException, InvalidInputException
 from quiz_backend.controllers.user_controllers import signupFn, loginFn
 from typing import Annotated
-=======
-from quiz_backend.models.user_models import User
 from .utils.exception import NotFoundException, ConflictException, InvalidInputException
 
->>>>>>> ce0d0359427d81eb1ce603b203122acdc2d0dbd8
-# Import other model modules
-import quiz_backend.models.admin_models
-import quiz_backend.models.quiz_models
 
 # Define async context manager for application lifespan
 @asynccontextmanager
@@ -54,6 +47,15 @@ app = FastAPI(title="OAuth2 Microservice",
             "description": "Local server"
         },
     ],)
+
+# add middleware for cors error
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_headers=["*"],
+    allow_methods=["*"]
+)
 
 # Exception handlers for custom exceptions
 
@@ -124,11 +126,7 @@ def userSignin(token_data: Annotated[dict, Depends(loginFn)]):
         return token_data
     raise NotFoundException("User")
 
-@app.get("/api/user")
-def postLogin(user):
-    return user
-    
-    
+
 
 # @app.get("/api/getUser")
 # def getUser(user: str):

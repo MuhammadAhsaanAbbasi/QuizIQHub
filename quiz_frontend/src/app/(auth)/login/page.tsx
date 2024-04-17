@@ -6,18 +6,17 @@ import Button from '@/components/layout/Button';
 import { FormType } from '@/lib/utils/types';
 import Link from 'next/link';
 import { setCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
 
 const page = () => {
 
-  let formData = new FormData();
-  const [error, setError] = useState();
+  // let [formData, setFormData] = useState(new FormData())
+
+  const [error, setError] = useState<string>();
   const { register, handleSubmit } = useForm<FormType>();
+  const router = useRouter();
 
   const loginFn = async (data: FormType) => {
-
-    formData.append("username", "bilal");
-    // formData.append("password", data.user_password)
-
     const response = await fetch(`http://localhost:8000/api/Signin`,
       {
         method: "POST",
@@ -28,21 +27,34 @@ const page = () => {
       }
     );
     if (!response.ok) {
-      setError(await response.json())
-    }else{
-      const tokens_data = await response.json()
-      
-      // TODO: set tokens in cookies
-      // setCookie()
+      setError(await response.json());
+    } else {
+      setError("");
+      const { access_token, refresh_token } = await response.json();
 
-      // console.log(formData.values);
-      console.log(formData);
+      const access_exipration_time = new Date();
+      access_exipration_time.setSeconds(access_exipration_time.getSeconds() + access_token.access_expiry_time);
+
+      const refresh_exipration_time = new Date();
+      refresh_exipration_time.setSeconds(refresh_exipration_time.getSeconds() + refresh_token.refresh_expiry_time);
+
+      setCookie("access_token", access_token.token, {
+        expires: access_exipration_time,
+        secure: true
+      });
+
+      setCookie("refresh_token", refresh_token.token, {
+        expires: refresh_exipration_time,
+        secure: true
+      });
+
+      router.push("/")
     }
   };
   return (
     <main className='h-screen flex justify-center items-center bg-gradient-to-tr from-black via-slate-950 to-blue-950'>
 
-      <div className='w-1/3 p-6 rounded-md bg-slate-600 flex flex-col gap-2 justify-center items-center'>
+      <div className='w-1/3 p-6 rounded-md bg-white flex flex-col gap-2 justify-center items-center'>
         <h1 className='md:text-2xl text-xl font-bold text-gray-900 m-2'>Welcome to Quiz Hub</h1>
         <p className='text-red-500'>{error ? error : ""}</p>
         <form onSubmit={handleSubmit(loginFn)} className='flex flex-col gap-4 justify-center items-center'>
@@ -93,4 +105,15 @@ export default page
 //   user_name:"bilal",
 //   user_email: "bilal2gmil.vom",
 //   user_password:"bilal123"
+// }
+
+// destructuring in javascript
+
+// const {access_token, refresh_token} = {
+//   access_token: {
+
+//   },
+//   refresh_token: {
+
+//   }
 // }

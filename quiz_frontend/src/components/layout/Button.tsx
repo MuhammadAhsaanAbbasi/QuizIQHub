@@ -7,7 +7,7 @@ const Button = ({ children, buttonType }: {
     
     return (
         <div>
-            <button type={buttonType} className='p-2 bg-sky-950 hover:bg-sky-800 text-white rounded-md'>
+            <button type={buttonType} className='w-full p-2 bg-black hover:bg-sky-800 text-white rounded-md'>
                 {children}
             </button>
         </div>

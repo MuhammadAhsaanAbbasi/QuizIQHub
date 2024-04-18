@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from fastapi.requests import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
-from quiz_backend.db.db_connector import  createTable
+from quiz_backend.db.db_connector import createTable
 from contextlib import asynccontextmanager
 from quiz_backend.utils.exception import NotFoundException, ConflictException, InvalidInputException
 from quiz_backend.controllers.user_controllers import signupFn, loginFn
@@ -28,25 +29,25 @@ async def lifeSpan(app: FastAPI):
 
 # Create FastAPI application instance with custom lifespan event handler
 app = FastAPI(title="OAuth2 Microservice",
-    description="A multi-user OAuth2 microservice with login/password signin and Google signin features.",
-    version="1.0.0",
-    terms_of_service="https://quiz_app.vercel.app/terms/",
-    lifespan=lifeSpan,
-    contact={
-        "name": "Muhammad Ahsaan Abbasi",
-        "url": "http://localhost:8000/contact/",
-        "email": "mahsaanabbasi@gmail.com",
-    },
-    license_info={
-        "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    servers=[
-        {
-            "url": "http://localhost:8000",
-            "description": "Local server"
-        },
-    ],)
+              description="A multi-user OAuth2 microservice with login/password signin and Google signin features.",
+              version="1.0.0",
+              terms_of_service="https://quiz_app.vercel.app/terms/",
+              lifespan=lifeSpan,
+              contact={
+                  "name": "Muhammad Ahsaan Abbasi",
+                  "url": "http://localhost:8000/contact/",
+                  "email": "mahsaanabbasi@gmail.com",
+              },
+              license_info={
+                  "name": "Apache 2.0",
+                  "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+              },
+              servers=[
+                  {
+                      "url": "http://localhost:8000",
+                      "description": "Local server"
+                  },
+              ],)
 
 # add middleware for cors error
 app.add_middleware(
@@ -58,6 +59,7 @@ app.add_middleware(
 )
 
 # Exception handlers for custom exceptions
+
 
 @app.exception_handler(NotFoundException)
 def not_found(request: Request, exception: NotFoundException):
@@ -73,6 +75,7 @@ def not_found(request: Request, exception: NotFoundException):
     """
     return JSONResponse(status_code=400, content=f"{exception.not_found} Not found")
 
+
 @app.exception_handler(ConflictException)
 def conflict_exception(request: Request, exception: ConflictException):
     """
@@ -86,6 +89,7 @@ def conflict_exception(request: Request, exception: ConflictException):
         JSONResponse: JSON response with 404 status code and error message.
     """
     return JSONResponse(status_code=409, content=f"This {exception.conflict_input} already exists!")
+
 
 @app.exception_handler(InvalidInputException)
 def invalid_exception(request: Request, exception: InvalidInputException):
@@ -102,6 +106,8 @@ def invalid_exception(request: Request, exception: InvalidInputException):
     return JSONResponse(status_code=400, content=f"Invalid {exception.invalid_input}!")
 
 # Define route for home endpoint
+
+
 @app.get("/")
 def home():
     """
@@ -113,19 +119,45 @@ def home():
     return "Welcome to the Quiz Project..."
 
 
-
 @app.post("/api/userSignup")
-def userSignup(tokens_data: Annotated[dict, Depends(signupFn)]):
-    if not tokens_data:
-        raise NotFoundException("User")
-    return tokens_data    
-
-@app.post("/api/Signin")
-def userSignin(token_data: Annotated[dict, Depends(loginFn)]):
+def userSignup(response: Response, token_data: Annotated[dict, Depends(signupFn)]):
     if token_data:
-        return token_data
+        print(token_data["refresh_token"]
+              ["refresh_expiry_time"].total_seconds())
+        response.set_cookie(key="access_token",
+                            value=token_data["access_token"]["token"],
+                            expires=int(
+                                token_data["access_token"]["access_expiry_time"].total_seconds())
+                            )
+        response.set_cookie(key="refresh_token",
+                            value=token_data["refresh_token"]["token"],
+                            max_age=int(
+                                token_data["refresh_token"]["refresh_expiry_time"].total_seconds())
+                            )
+
+        return "You have registered successfully"
     raise NotFoundException("User")
 
+
+@app.post("/api/Signin")
+def userSignin(request: Request, response: Response, token_data: Annotated[dict, Depends(loginFn)]):
+    if token_data:
+        print(token_data["refresh_token"]
+              ["refresh_expiry_time"].total_seconds())
+        print(request.headers)
+        response.set_cookie(key="access_token",
+                            value=token_data["access_token"]["token"],
+                            expires=int(
+                                token_data["access_token"]["access_expiry_time"].total_seconds())
+                            )
+        response.set_cookie(key="refresh_token",
+                            value=token_data["refresh_token"]["token"],
+                            max_age=int(
+                                token_data["refresh_token"]["refresh_expiry_time"].total_seconds())
+                            )
+
+        return "You have logged in successfully"
+    raise NotFoundException("User")
 
 
 # @app.get("/api/getUser")

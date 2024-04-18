@@ -30,7 +30,7 @@ def generateToken(data: dict, expiry_time: timedelta):
         str: The generated JWT token.
     """
     try:
-        print(expiry_time)
+        # print(expiry_time)
         # Update the payload with the expiration time
         to_encode_data = data.copy()
         to_encode_data.update({

@@ -17,7 +17,7 @@ const page = () => {
   const router = useRouter();
 
   const loginFn = async (data: FormType) => {
-    const response = await fetch(`http://localhost:8000/api/Signin`,
+    const response = await fetch(`/api/api/Signin`,
       {
         method: "POST",
         headers: {
@@ -30,23 +30,25 @@ const page = () => {
       setError(await response.json());
     } else {
       setError("");
-      const { access_token, refresh_token } = await response.json();
+      console.log(await response.json());
+      
+      // const { access_token, refresh_token } = await response.json();
 
-      const access_exipration_time = new Date();
-      access_exipration_time.setSeconds(access_exipration_time.getSeconds() + access_token.access_expiry_time);
+      // const access_exipration_time = new Date();
+      // access_exipration_time.setSeconds(access_exipration_time.getSeconds() + access_token.access_expiry_time);
 
-      const refresh_exipration_time = new Date();
-      refresh_exipration_time.setSeconds(refresh_exipration_time.getSeconds() + refresh_token.refresh_expiry_time);
+      // const refresh_exipration_time = new Date();
+      // refresh_exipration_time.setSeconds(refresh_exipration_time.getSeconds() + refresh_token.refresh_expiry_time);
 
-      setCookie("access_token", access_token.token, {
-        expires: access_exipration_time,
-        secure: true
-      });
+      // setCookie("access_token", access_token.token, {
+      //   expires: access_exipration_time,
+      //   secure: true
+      // });
 
-      setCookie("refresh_token", refresh_token.token, {
-        expires: refresh_exipration_time,
-        secure: true
-      });
+      // setCookie("refresh_token", refresh_token.token, {
+      //   expires: refresh_exipration_time,
+      //   secure: true
+      // });
 
       router.push("/")
     }

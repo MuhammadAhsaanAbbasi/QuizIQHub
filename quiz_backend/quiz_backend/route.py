@@ -3,13 +3,17 @@ from fastapi.responses import JSONResponse, Response
 from fastapi.requests import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
+from sqlmodel import Session
+from quiz_backend.controllers.admin_controllers import admin_login, set_category , set_quiz_level ,  set_questions 
 from quiz_backend.db.db_connector import createTable
 from contextlib import asynccontextmanager
 from quiz_backend.utils.exception import NotFoundException, ConflictException, InvalidInputException
 from quiz_backend.controllers.user_controllers import signupFn, loginFn
 from typing import Annotated
 from .utils.exception import NotFoundException, ConflictException, InvalidInputException
-
+from quiz_backend.controllers.quiz_controllers import get_categrios, get_question, get_quiz_diff
+from quiz_backend.db.db_connector import get_session
+# from quiz_backend.controllers.openai_apis.question_generate import openai_question
 
 # Define async context manager for application lifespan
 @asynccontextmanager
@@ -174,3 +178,54 @@ def userSignin(request: Request, response: Response, token_data: Annotated[dict,
 #     if user == "bilal":
 #         raise NotFoundException("User")
 #     return "User has been found"
+
+
+
+
+@app.get('/api/get_category')
+def categories_route(session : Annotated[Session , Depends(get_session)]):
+    return get_categrios(session)
+
+
+
+@app.get('/api/get_quiz_level')
+def quiz_level_route(id : int ,  session : Annotated[Session , Depends(get_session)]):
+    return get_quiz_diff(category_id=id , session=session)
+
+
+
+@app.get('/api/quiz_question')
+def quiz_question_route( session : Annotated[Session , Depends(get_session)]):
+    return get_question( session=session)
+
+
+@app.post('/api/admin_login')
+def admin_auth(admin = Depends(admin_login)):
+    return admin
+
+
+@app.post('/api/catgory_add')
+def add_category(add_catgory = Depends(set_category)):
+    return add_catgory
+
+
+@app.post('/api/quiz_level')
+def add_quiz_level_route(route_func = Depends(set_quiz_level)):
+    return route_func
+
+
+
+@app.post('/api/add_question')
+def add_quiz_question(route_func = Depends(set_questions)):
+    return route_func
+
+
+# @app.post('/api/add_choices')
+# def add_choices_route(route_func = Depends(set_choice)):
+#     return route_func
+
+
+
+# @app.get('/api/openai_question')
+# def ai_route(route_func = Depends(openai_question)):
+#     return route_func

@@ -204,7 +204,7 @@ def admin_auth(admin = Depends(admin_login)):
     return admin
 
 
-@app.post('/api/catgory_add')
+@app.post('/api/add_category')
 def add_category(add_catgory = Depends(set_category)):
     return add_catgory
 

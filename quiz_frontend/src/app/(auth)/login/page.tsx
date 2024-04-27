@@ -17,7 +17,7 @@ const page = () => {
   const router = useRouter();
 
   const loginFn = async (data: FormType) => {
-    const response = await fetch(`/api/api/Signin`,
+    const response = await fetch(`/api/Signin`,
       {
         method: "POST",
         headers: {
@@ -81,7 +81,7 @@ const page = () => {
         <h1 className='md:text-xl text-gray-900 m-2'>
           Don't have an account?
         </h1>
-        <Link href={"/register"}>
+        <Link href={"/register"} className='w-3/5'>
           <Button buttonType='button'>
             Sign Up
           </Button>

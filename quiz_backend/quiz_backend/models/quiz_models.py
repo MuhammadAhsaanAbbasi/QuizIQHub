@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Field, Relationship
 
 # Define Category model
 class Category(SQLModel, table=True):
-    category_id: Optional[int] = Field(None, primary_key=True)
+    category_id: Optional[int] = Field(None, primary_key=True)# It will generate database
     category_name: str  # Name of the category
     category_description: str  # Description of the category
 
@@ -22,7 +22,7 @@ class QuizLevel(SQLModel, table=True):
 class Quiz(SQLModel, table=True):
     question_id: Optional[int] = Field(None, primary_key=True)
     question: str  # Question for the quiz
-    quizLevel_id: Optional[int]  = Field(int, foreign_key="quizlevel.quiz_level_id")  # Foreign key relationship to QuizLevel
+    quizLevel_id: int  = Field(int, foreign_key="quizlevel.quiz_level_id")  # Foreign key relationship to QuizLevel
     questions: list["Choices"] = Relationship(back_populates="choices")
 
     
@@ -34,6 +34,7 @@ class Choices(SQLModel, table=True):
     choice: str  # Choice for the question
     status: bool = False  # Status of the choice (correct or incorrect)
     choices: Quiz | None = Relationship(back_populates="questions")
+ 
  
 class QuizModel(BaseModel):
     quiz_level_id: int

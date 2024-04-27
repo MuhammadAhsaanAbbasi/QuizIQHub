@@ -15,7 +15,7 @@ const page = () => {
   const router = useRouter();
 
   const signupFn = async (data: FormType) => {
-    const response = await fetch("/api/api/userSignup", {
+    const response = await fetch("/api/userSignup", {
       method: "POST",
       headers: {
         "content-type": "application/json"
